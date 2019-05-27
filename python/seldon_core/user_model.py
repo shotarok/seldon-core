@@ -55,7 +55,7 @@ class SeldonComponent(object):
         np.ndarray, List, str, bytes, None]:
         raise NotImplementedError
 
-    def route(self, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str]) -> int:
+    def route(self, features: Union[np.ndarray, str, bytes], feature_names: Iterable[str], meta: Dict = None) -> int:
         raise NotImplementedError
 
     def route_raw(self, msg: prediction_pb2.SeldonMessage) -> prediction_pb2.SeldonMessage:
@@ -282,7 +282,7 @@ def client_send_feedback(user_model: SeldonComponent, features: Union[np.ndarray
 
 
 def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, bytes],
-                 feature_names: Iterable[str]) -> int:
+                 feature_names: Iterable[str], **kwargs: Dict) -> int:
     """
     Get routing from user model
 
@@ -294,13 +294,18 @@ def client_route(user_model: SeldonComponent, features: Union[np.ndarray, str, b
        Payload
     feature_names
        Columns for payload
+    kwargs
+       Optional keyword arguments
 
     Returns
     -------
        Routing index for one of children
     """
     try:
-        return user_model.route(features, feature_names)
+        try:
+            return user_model.route(features, feature_names, **kwargs)
+        except TypeError:
+            return user_model.route(features, feature_names)
     except (NotImplementedError, AttributeError):
         raise SeldonMicroserviceException("Route not defined")
 

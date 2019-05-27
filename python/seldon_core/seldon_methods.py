@@ -173,7 +173,7 @@ def route(user_model: Any, request: prediction_pb2.SeldonMessage) -> prediction_
             return user_model.route_raw(request)
         except (NotImplementedError, AttributeError):
             (features, meta, datadef, _) = extract_request_parts(request)
-            client_response = client_route(user_model, features, datadef.names)
+            client_response = client_route(user_model, features, datadef.names, meta=meta)
             if not isinstance(client_response, int):
                 raise SeldonMicroserviceException("Routing response must be int but got " + str(client_response))
             client_response_arr = np.array([[client_response]])
